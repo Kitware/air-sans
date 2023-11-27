@@ -10,14 +10,6 @@ A trame application for analysis, inspection, and reduction of multi-detector da
 
 Installing
 ----------
-Build and install the Vue components
-
-.. code-block:: console
-
-    cd vue-components
-    npm i
-    npm run build
-    cd -
 
 Install the application
 
@@ -30,9 +22,4 @@ Run the application
 
 .. code-block:: console
 
-    air-sans
-
-Features
---------
-
-* TODO
+    air-sans --data ./data

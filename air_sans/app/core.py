@@ -208,6 +208,8 @@ class Engine:
 
     @change("device_active_data")
     def show_imask(self, device_active_data, **kwargs):
+        self.server.state.figure_ready = False
+
         if device_active_data == "mask":
             self.Visualization.set_center_data(
                 self._selected_device.detector1_imask_data
@@ -245,7 +247,7 @@ class Engine:
             self.server.state.figure_ready = True
             self.Visualization.create_d11_fig()
 
-        if device_active_data == "":
+        if device_active_data == "" and self.server.state.file:
             self.selected_file(self.server.state.file)
 
 
