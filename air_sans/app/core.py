@@ -16,15 +16,21 @@ from .utilities import file_load as fl
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+
+SUPPORTED_DEVICES = ["D11+"]
+
 # ---------------------------------------------------------
 # Engine class
 # ---------------------------------------------------------
-search_directory = "/Users/patrick.oleary/Desktop/share"
 
 
 class Engine:
-    def __init__(self, server):
-        self._server = server
+    def __init__(self, server=None):
+        self.server = get_server(server, client_type="vue2")
+        self.server.cli.add_argument(
+            "--data", help="Path to browse", dest="data", default="."
+        )
+        args, _ = server.cli.parse_known_args()
 
         # initialize state + controller
         state, ctrl = server.state, server.controller
@@ -33,8 +39,8 @@ class Engine:
         self.Visualization = Visualization
 
         # search directory contents
-        dirs = fs.get_directory_structure(search_directory)
-        state.devices = ["D11", "D11+"]
+        dirs = fs.get_directory_structure(args.data)
+        state.devices = SUPPORTED_DEVICES
         state.selectedDevice = None
         state.directory = None
         state.directory_label = None
@@ -84,18 +90,11 @@ class Engine:
 
         # Set state variable
         state.trame__title = "air-sans"
-        state.resolution = 6
 
         # Bind instance methods to controller
-        ctrl.reset_resolution = self.reset_resolution
-        ctrl.widget_click = self.widget_click
-        ctrl.widget_change = self.widget_change
         ctrl.trigger_directory_dialog = self.trigger_directory_dialog
         ctrl.trigger_directory_selection = self.trigger_directory_selection
         ctrl.selected_file = self.selected_file
-
-        # Bind instance methods to state change
-        state.change("resolution")(self.on_resolution_change)
 
         @state.change("d11_size")
         def update_left_contour_size(d11_size, **kwargs):
@@ -126,10 +125,6 @@ class Engine:
     #    ctrl.update_right_contour(Visualization.create_right_contour_fig(**right_contour_size.get("size")))
 
     @property
-    def server(self):
-        return self._server
-
-    @property
     def state(self):
         return self.server.state
 
@@ -137,40 +132,22 @@ class Engine:
     def ctrl(self):
         return self.server.controller
 
-    def show_in_jupyter(self, **kwargs):
-        from trame.app import jupyter
-
-        logger.setLevel(logging.WARNING)
-        jupyter.show(self.server, **kwargs)
-
-    def reset_resolution(self):
-        self._server.state.resolution = 6
-
-    def on_resolution_change(self, resolution, **kwargs):
-        logger.info(f">>> ENGINE(a): Slider updating resolution to {resolution}")
-
-    def widget_click(self):
-        logger.info(">>> ENGINE(a): Widget Click")
-
-    def widget_change(self):
-        logger.info(">>> ENGINE(a): Widget Change")
-
     def trigger_directory_dialog(self):
-        self._server.state.directory_dialog = not self._server.state.directory_dialog
+        self.server.state.directory_dialog = not self.server.state.directory_dialog
 
     def trigger_directory_selection(self, active_nodes):
-        self._server.state.directory_label = None
-        self._server.state.directory = None
+        self.server.state.directory_label = None
+        self.server.state.directory = None
         if len(active_nodes):
             node_id = active_nodes[0]
             if isinstance(node_id, str):
-                self._server.state.directory_label = os.path.basename(node_id)
-                self._server.state.directory = node_id
-                self._server.state.files = fs.get_file_list(node_id)
+                self.server.state.directory_label = os.path.basename(node_id)
+                self.server.state.directory = node_id
+                self.server.state.files = fs.get_file_list(node_id)
 
     def selected_file(self, file):
-        state = self._server.state
-        ctrl = self._server.controller
+        state = self.server.state
+        ctrl = self.server.controller
         state.file = file
         data = fl.load(state.directory, state.file)
         pixel_y = 1.0

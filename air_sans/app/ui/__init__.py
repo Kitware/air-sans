@@ -1,8 +1,6 @@
 from trame.ui.vuetify import SinglePageWithDrawerLayout
 from trame.widgets import vuetify, plotly, trame
 
-from air_sans.widgets import air_sans as my_widgets
-
 from . import workflow_buttons as wb
 from . import device_card as devc
 from . import directory_card as dc
@@ -24,24 +22,6 @@ def initialize(server):
             vuetify.VSpacer()
             wb.workflow_buttons()
             vuetify.VSpacer()
-            my_widgets.CustomWidget(
-                attribute_name="Hello",
-                py_attr_name="World",
-                click=ctrl.widget_click,
-                change=ctrl.widget_change,
-            )
-            vuetify.VSpacer()
-            vuetify.VSlider(  # Add slider
-                v_model=("resolution", 6),  # bind variable with an initial value of 6
-                min=3,
-                max=60,  # slider range
-                dense=True,
-                hide_details=True,  # presentation setup
-            )
-            with vuetify.VBtn(icon=True, click=ctrl.reset_camera):
-                vuetify.VIcon("mdi-crop-free")
-            with vuetify.VBtn(icon=True, click=ctrl.reset_resolution):
-                vuetify.VIcon("mdi-undo")
         with layout.drawer as drawer:
             drawer.width = 350
             devc.device_card(ctrl)

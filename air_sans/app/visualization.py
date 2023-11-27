@@ -39,7 +39,7 @@ class Visualization:
                 [None, None, None, None],
                 [None, None, None, None],
             ],
-            print_grid=True,
+            print_grid=False,
         )
         # center (1,2), left (2,1), right (2,4)
         if state.selectedRepresentation == "Heatmap":
