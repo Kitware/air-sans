@@ -1,10 +1,12 @@
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from trame.decorators import TrameApp, change
 
 
+@TrameApp()
 class Visualization:
     def __init__(self, server):
-        self._server = server
+        self.server = server
         self._state = server.state
         self._ctrl = server.controller
         self._left_data = None
@@ -20,10 +22,20 @@ class Visualization:
     def set_right_data(self, data):
         self._right_data = data
 
+    @change(
+        "selectedRepresentation",
+        "contour_labels",
+        "selectedColor",
+        "center_nx",
+        "center_ny",
+        "pixel_ratio",
+        "left_nx",
+        "left_ny",
+        "right_nx",
+        "right_ny",
+    )
     def create_d11_fig(self, width=100, height=100, **kwargs):
         state = self._state
-        print("contour ", width, height)
-
         fig = make_subplots(
             rows=5,
             cols=4,
@@ -44,7 +56,7 @@ class Visualization:
         # center (1,2), left (2,1), right (2,4)
         if state.selectedRepresentation == "Heatmap":
             self.create_heatmap(fig, self._center_data, 1, 2)
-        elif state.selectedRepresentation == "Contour":
+        elif state.selectedRepresentation == "Contours":
             self.create_contour(fig, self._center_data, 1, 2)
         else:
             self.create_combined(fig, self._center_data, 1, 2)
@@ -61,7 +73,7 @@ class Visualization:
         )
         if state.selectedRepresentation == "Heatmap":
             self.create_heatmap(fig, self._left_data, 2, 1)
-        elif state.selectedRepresentation == "Contour":
+        elif state.selectedRepresentation == "Contours":
             self.create_contour(fig, self._left_data, 2, 1)
         else:
             self.create_combined(fig, self._left_data, 2, 1)
@@ -76,7 +88,7 @@ class Visualization:
         )
         if state.selectedRepresentation == "Heatmap":
             self.create_heatmap(fig, self._right_data, 2, 4)
-        elif state.selectedRepresentation == "Contour":
+        elif state.selectedRepresentation == "Contours":
             self.create_contour(fig, self._right_data, 2, 4)
         else:
             self.create_combined(fig, self._right_data, 2, 4)
@@ -92,6 +104,8 @@ class Visualization:
         fig.update_layout(
             coloraxis=dict(colorscale=state.selectedColor), showlegend=False
         )
+        self._ctrl.update_d11(fig)
+
         return fig
 
     def create_heatmap(self, fig, data, _row, _col, **kwargs):
@@ -148,123 +162,6 @@ class Visualization:
             row=_row,
             col=_col,
         )
-
-    def create_left_contour_fig(self, width=100, height=100, **kwargs):
-        state = self._state
-        print("contour ", width, height)
-
-        fig = go.Figure(
-            data=go.Contour(
-                z=self._left_data,
-                contours={
-                    "coloring": "heatmap",
-                    "showlabels": True,
-                    "labelfont": {
-                        "size": 12,
-                        "color": "black",
-                    },
-                },
-                line_smoothing=1,
-                coloraxis="coloraxis",
-            )
-        )
-        fig.update_layout(
-            # title = 'Mic Patterns',
-            # margin=dict(l=20, r=20, t=20, b=20),
-            showlegend=False,
-            # width=width,
-            # height=height,
-        )
-        fig.update(layout_coloraxis_showscale=False)
-        fig.update_yaxes(
-            range=(0.0, state.left_nx),
-            constrain="domain",
-        )
-        fig.update_xaxes(
-            range=(0.0, state.left_ny),
-            constrain="domain",
-            scaleanchor="y",
-            scaleratio=state.pixel_ratio,
-        )
-        return fig
-
-    def create_center_contour_fig(self, width=100, height=100, **kwargs):
-        state = self._state
-        print("contour ", width, height)
-
-        fig = go.Figure(
-            data=go.Contour(
-                z=self._center_data,
-                contours={
-                    "coloring": "heatmap",
-                    "showlabels": True,
-                    "labelfont": {
-                        "size": 12,
-                        "color": "black",
-                    },
-                },
-                line_smoothing=1,
-                coloraxis="coloraxis",
-            )
-        )
-        fig.update_layout(
-            # title = 'Mic Patterns',
-            # margin=dict(l=20, r=20, t=20, b=20),
-            showlegend=False,
-            # width=width,
-            # height=height,
-        )
-        fig.update(layout_coloraxis_showscale=False)
-        fig.update_yaxes(
-            range=(0.0, state.center_nx),
-            constrain="domain",
-            scaleanchor="x",
-            scaleratio=state.pixel_ratio,
-        )
-        fig.update_xaxes(
-            range=(0.0, state.center_ny),
-            constrain="domain",
-        )
-        return fig
-
-    def create_right_contour_fig(self, width=100, height=100, **kwargs):
-        state = self._state
-        print("contour ", width, height)
-
-        fig = go.Figure(
-            data=go.Contour(
-                z=self._right_data,
-                contours={
-                    "coloring": "heatmap",
-                    "showlabels": True,
-                    "labelfont": {
-                        "size": 12,
-                        "color": "black",
-                    },
-                },
-                line_smoothing=1,
-                coloraxis="coloraxis",
-            )
-        )
-        fig.update_layout(
-            # title = 'Mic Patterns',
-            # margin=dict(l=20, r=20, t=20, b=20),
-            showlegend=False,
-            # width=width,
-            # height=height,
-        )
-        fig.update(layout_coloraxis_showscale=False)
-        fig.update_yaxes(
-            range=(0.0, state.right_nx),
-            constrain="domain",
-        )
-        fig.update_xaxes(
-            range=(0.0, state.right_ny),
-            constrain="domain",
-            scaleanchor="y",
-            scaleratio=state.pixel_ratio,
-        )
-        return fig
 
 
 def create_visualization(server=None):

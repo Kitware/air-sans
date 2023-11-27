@@ -26,3 +26,12 @@ def device_card_text(ctrl):
                 hide_details=True,
                 outlined=True,
             )
+        with vuetify.VCol(cols="6"):
+            vuetify.VSelect(
+                v_model=("device_active_data", None),
+                items=("device_data", ["", "mask", "efficiency", "error"]),
+                label="Parameters",
+                dense=True,
+                hide_details=True,
+                outlined=True,
+            )

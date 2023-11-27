@@ -35,11 +35,11 @@ def initialize(server):
             with vuetify.VContainer(
                 fluid=True,
                 classes="pa-0 fill-height",
-                v_show=("selectedDevice",),
             ):
                 with trame.SizeObserver("d11_size"):
                     ctrl.update_d11 = plotly.Figure(
                         display_mode_bar=("false",),
+                        v_show=("figure_ready", False),
                     ).update
 
         # Footer

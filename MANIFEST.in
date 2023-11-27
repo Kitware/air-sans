@@ -1,1 +1,2 @@
-graft air_sans/module/serve
+graft air_sans/app/instrument/det_efficiency/*.mat
+graft air_sans/app/instrument/def_mask/*.mat

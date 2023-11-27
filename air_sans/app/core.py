@@ -7,6 +7,9 @@ import numpy
 
 import logging
 from trame.app import get_server
+from trame.decorators import TrameApp, change
+
+from .instrument.d11_plus import D11_Plus
 
 from .visualization import create_visualization
 
@@ -24,6 +27,7 @@ SUPPORTED_DEVICES = ["D11+"]
 # ---------------------------------------------------------
 
 
+@TrameApp()
 class Engine:
     def __init__(self, server=None):
         self.server = get_server(server, client_type="vue2")
@@ -37,6 +41,9 @@ class Engine:
 
         Visualization = create_visualization(server)
         self.Visualization = Visualization
+
+        # Local variables
+        self._selected_device = None
 
         # search directory contents
         dirs = fs.get_directory_structure(args.data)
@@ -81,7 +88,7 @@ class Engine:
         state.image_workflow = False
 
         # Set state visualization
-        state.pixel_ratio = 1.0
+        state.pixel_ratio = 2.0
         state.representations = ["Heatmap", "Contours", "Combined"]
         state.selectedRepresentation = "Heatmap"
         state.colors = ["spectral", "rdbu", "gray", "blackbody", "sunset"]
@@ -101,7 +108,7 @@ class Engine:
             if d11_size is None:
                 return
 
-            ctrl.update_d11(Visualization.create_d11_fig(**d11_size.get("size")))
+            Visualization.create_d11_fig(**d11_size.get("size"))
 
     # @state.change("left_contour_size")
     # def update_left_contour_size(left_contour_size, **kwargs):
@@ -132,6 +139,11 @@ class Engine:
     def ctrl(self):
         return self.server.controller
 
+    @change("selectedDevice")
+    def on_device_change(self, selectedDevice, **kwargs):
+        if selectedDevice == "D11+":
+            self._selected_device = D11_Plus()
+
     def trigger_directory_dialog(self):
         self.server.state.directory_dialog = not self.server.state.directory_dialog
 
@@ -147,7 +159,6 @@ class Engine:
 
     def selected_file(self, file):
         state = self.server.state
-        ctrl = self.server.controller
         state.file = file
         data = fl.load(state.directory, state.file)
         pixel_y = 1.0
@@ -192,10 +203,50 @@ class Engine:
                 d3[j, i] = detector3_2d[j, i]
         self.Visualization.set_right_data(d3.transpose())
 
-        # ctrl.update_left_contour(self.Visualization.create_left_contour_fig())
-        # ctrl.update_center_contour(self.Visualization.create_center_contour_fig())
-        # ctrl.update_right_contour(self.Visualization.create_right_contour_fig())
-        ctrl.update_d11(self.Visualization.create_d11_fig())
+        self.Visualization.create_d11_fig()
+        state.figure_ready = True
+
+    @change("device_active_data")
+    def show_imask(self, device_active_data, **kwargs):
+        if device_active_data == "mask":
+            self.Visualization.set_center_data(
+                self._selected_device.detector1_imask_data
+            )
+            self.Visualization.set_left_data(self._selected_device.detector2_imask_data)
+            self.Visualization.set_right_data(
+                self._selected_device.detector3_imask_data
+            )
+            self.server.state.figure_ready = True
+            self.Visualization.create_d11_fig()
+
+        if device_active_data == "efficiency":
+            self.Visualization.set_center_data(
+                self._selected_device.detector1_efficiency_data
+            )
+            self.Visualization.set_left_data(
+                self._selected_device.detector2_efficiency_data
+            )
+            self.Visualization.set_right_data(
+                self._selected_device.detector3_efficiency_data
+            )
+            self.server.state.figure_ready = True
+            self.Visualization.create_d11_fig()
+
+        if device_active_data == "error":
+            self.Visualization.set_center_data(
+                self._selected_device.detector1_efficiency_error
+            )
+            self.Visualization.set_left_data(
+                self._selected_device.detector2_efficiency_error
+            )
+            self.Visualization.set_right_data(
+                self._selected_device.detector3_efficiency_error
+            )
+            self.server.state.figure_ready = True
+            self.Visualization.create_d11_fig()
+
+        if device_active_data == "":
+            self.selected_file(self.server.state.file)
 
 
 def create_engine(server=None):
