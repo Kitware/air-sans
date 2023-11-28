@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.2.1 (2023-11-28)
+
+### Fix
+
+* **binder:** Reduce dependencies and enable binder ([`9ee1bb2`](https://github.com/Kitware/air-sans/commit/9ee1bb28c0d16cee579193a0055ccdb62b947567))
+
 ## v0.2.0 (2023-11-28)
 
 ### Feature
