@@ -7,8 +7,6 @@ from trame.decorators import TrameApp, change
 class Visualization:
     def __init__(self, server):
         self.server = server
-        self._state = server.state
-        self._ctrl = server.controller
         self._left_data = None
         self._center_data = None
         self._right_data = None
@@ -35,7 +33,7 @@ class Visualization:
         "right_ny",
     )
     def create_d11_fig(self, width=100, height=100, **kwargs):
-        state = self._state
+        state = self.server.state
         fig = make_subplots(
             rows=5,
             cols=4,
@@ -104,7 +102,7 @@ class Visualization:
         fig.update_layout(
             coloraxis=dict(colorscale=state.selectedColor), showlegend=False
         )
-        self._ctrl.update_d11(fig)
+        self.server.controller.update_d11(fig)
 
         return fig
 
@@ -119,7 +117,7 @@ class Visualization:
         )
 
     def create_contour(self, fig, data, _row, _col, **kwargs):
-        state = self._state
+        state = self.server.state
 
         fig.add_trace(
             go.Contour(
@@ -142,7 +140,7 @@ class Visualization:
         )
 
     def create_combined(self, fig, data, _row, _col, **kwargs):
-        state = self._state
+        state = self.server.state
 
         fig.add_trace(
             go.Contour(
