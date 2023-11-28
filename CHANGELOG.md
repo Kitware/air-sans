@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.2.0 (2023-11-28)
+
+### Feature
+
+* **jupyter:** Fix usage in jupyter ([`1464a33`](https://github.com/Kitware/air-sans/commit/1464a33b3e3cdcdcfb75066b9a3a31247bdd2cc2))
+
 ## v0.1.1 (2023-11-28)
 
 ### Fix
