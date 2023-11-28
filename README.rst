@@ -26,3 +26,8 @@ Run the application
 .. code-block:: console
 
     air-sans --data ./data
+
+Binder usage
+------------
+
+`Test it with Binder <https://mybinder.org/v2/gh/Kitware/air-sans/HEAD>`_

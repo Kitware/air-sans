@@ -32,7 +32,7 @@ class Visualization:
         "right_nx",
         "right_ny",
     )
-    def create_d11_fig(self, width=100, height=100, **kwargs):
+    def create_d11_fig(self, **kwargs):
         state = self.server.state
         fig = make_subplots(
             rows=5,

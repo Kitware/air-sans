@@ -1,0 +1,10 @@
+# Used for binder
+aiohttp<3.9
+trame
+trame-vuetify
+trame-plotly
+nexusformat
+plotly
+
+air-sans
+trame_jupyter_extension<2
