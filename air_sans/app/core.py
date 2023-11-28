@@ -40,7 +40,7 @@ PANELS = [
 
 @TrameApp()
 class AirSans:
-    def __init__(self, server=None):
+    def __init__(self, server=None, data=None):
         self.server = get_server(server, client_type="vue2")
         self._viz = Visualization(self.server)
         self._selected_device = None
@@ -54,9 +54,11 @@ class AirSans:
             default=".",
         )
         args, _ = self.server.cli.parse_known_args()
+        if data is None:
+            data = args.data
 
         # search directory contents
-        self.state.dirs = fs.get_directory_structure(args.data)
+        self.state.dirs = fs.get_directory_structure(data)
         self.state.files = []
         self.state.file = None
 
@@ -119,6 +121,8 @@ class AirSans:
                         v_show=("figure_ready", False),
                     ).update
 
+            return layout
+
     @change("selectedDevice")
     def on_device_change(self, selectedDevice, **kwargs):
         if selectedDevice == "D11+":
@@ -140,12 +144,12 @@ class AirSans:
         data = fl.load(self._active_directory, state.file)
         pixel_y = 1.0
         pixel_x = 1.0
-        print(pixel_y / pixel_x, pixel_x, type(pixel_x), pixel_y, type(pixel_y))
+        # print(pixel_y / pixel_x, pixel_x, type(pixel_x), pixel_y, type(pixel_y))
         pixel_y = data["/entry0/D11/Detector 1/pixel_size_y"].nxdata[0].item()
         pixel_x = data["/entry0/D11/Detector 1/pixel_size_x"].nxdata[0].item()
-        print(pixel_y / pixel_x, pixel_x, type(pixel_x), pixel_y, type(pixel_y))
+        # print(pixel_y / pixel_x, pixel_x, type(pixel_x), pixel_y, type(pixel_y))
         state.pixel_ratio = pixel_y / pixel_x
-        print(state.pixel_ratio)
+        # print(state.pixel_ratio)
 
         detector1 = data["/entry0/D11/Detector 1/data"]
         detector1_2d = detector1[:, :, 0]

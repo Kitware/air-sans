@@ -27,3 +27,4 @@ __pycache__
 
 build
 examples
+.ipynb_checkpoints

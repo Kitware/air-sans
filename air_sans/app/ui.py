@@ -79,7 +79,9 @@ class DirectoryDialog(vuetify.VDialog):
                     dense=True,
                 ):
                     html.Div("Directory")
-                with vuetify.VCardText(classes="pa-1", style="height: 50vh;"):
+                with vuetify.VCardText(
+                    classes="pa-1", style="height: 50vh; overflow: auto;"
+                ):
                     vuetify.VTreeview(
                         classes="mb-1",
                         dense=True,
