@@ -44,6 +44,7 @@ class AirSans:
         self.server = get_server(server, client_type="vue2")
         self._viz = Visualization(self.server)
         self._selected_device = None
+        self._active_directory = None
 
         # CLI
         self.server.cli.add_argument(
@@ -56,7 +57,6 @@ class AirSans:
 
         # search directory contents
         self.state.dirs = fs.get_directory_structure(args.data)
-        # self.state.directory = None
         self.state.files = []
         self.state.file = None
 
@@ -126,18 +126,18 @@ class AirSans:
 
     def select_directory(self, active_nodes):
         self.server.state.directory_label = None
-        self.server.state.directory = None
+        self._active_directory = None
         if len(active_nodes):
             node_id = active_nodes[0]
             if isinstance(node_id, str):
                 self.server.state.directory_label = os.path.basename(node_id)
-                self.server.state.directory = node_id
+                self._active_directory = node_id
                 self.server.state.files = fs.get_file_list(node_id)
 
     def selected_file(self, file):
         state = self.server.state
         state.file = file
-        data = fl.load(state.directory, state.file)
+        data = fl.load(self._active_directory, state.file)
         pixel_y = 1.0
         pixel_x = 1.0
         print(pixel_y / pixel_x, pixel_x, type(pixel_x), pixel_y, type(pixel_y))

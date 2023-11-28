@@ -53,7 +53,8 @@ class DeviceSelector(AbstractCard):
 class DirectoryDialog(vuetify.VDialog):
     def __init__(self, select_directory_fn):
         super().__init__(
-            v_model=("directory_dialog", False), persistent=True, max_width="300px"
+            v_model=("directory_dialog", False),
+            persistent=True,
         )
         with self:
             with vuetify.Template(
@@ -69,16 +70,16 @@ class DirectoryDialog(vuetify.VDialog):
                 ):
                     vuetify.VIcon("mdi-folder")
             with vuetify.VCard(
-                classes="ma-1 rounded elevation-8",
+                classes="ma-1 rounded elevation-8", style="min-width: 50vw;"
             ):
                 with vuetify.VCardTitle(
-                    classes="grey lighten-1 pa-0 grey--text text--darken-3",
-                    style="user-select: none; cursor: pointer",
+                    classes="grey lighten-1 px-2 py-0 grey--text text--darken-3",
+                    style="user-select: none;",
                     hide_details=True,
                     dense=True,
                 ):
                     html.Div("Directory")
-                with vuetify.VCardText(classes="pa-1"):
+                with vuetify.VCardText(classes="pa-1", style="height: 50vh;"):
                     vuetify.VTreeview(
                         classes="mb-1",
                         dense=True,
@@ -94,13 +95,12 @@ class DirectoryDialog(vuetify.VDialog):
                         ),
                     )
                 with vuetify.VCardActions(
-                    classes="px-0 py-1",
+                    classes="py-1",
                     hide_details=True,
                     dense=True,
                 ):
                     vuetify.VSpacer()
                     with vuetify.VBtn(
-                        classes="ma-0",
                         icon=True,
                         dense=True,
                         small=True,
@@ -110,7 +110,6 @@ class DirectoryDialog(vuetify.VDialog):
                     ):
                         vuetify.VIcon("mdi-cancel")
                     with vuetify.VBtn(
-                        classes="ma-0",
                         icon=True,
                         dense=True,
                         small=True,

@@ -160,7 +160,3 @@ class Visualization:
             row=_row,
             col=_col,
         )
-
-
-def create_visualization(server=None):
-    return Visualization(server)
