@@ -5,7 +5,7 @@ import logging
 from trame.app import get_server
 from trame.decorators import TrameApp, change
 from trame.ui.vuetify import SinglePageWithDrawerLayout
-from trame.widgets import vuetify, plotly, trame
+from trame.widgets import vuetify, plotly
 
 from .ui import (
     DeviceSelector,
