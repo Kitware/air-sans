@@ -114,18 +114,10 @@ class AirSans:
                     fluid=True,
                     classes="pa-0 fill-height",
                 ):
-                    with trame.SizeObserver("d11_size"):
-                        self.ctrl.update_d11 = plotly.Figure(
-                            display_mode_bar=("false",),
-                            v_show=("figure_ready", False),
-                        ).update
-
-    @change("d11_size")
-    def update_left_contour_size(self, d11_size, **kwargs):
-        if d11_size is None:
-            return
-
-        self._viz.create_d11_fig(**d11_size.get("size"))
+                    self.ctrl.update_d11 = plotly.Figure(
+                        display_mode_bar=("false",),
+                        v_show=("figure_ready", False),
+                    ).update
 
     @change("selectedDevice")
     def on_device_change(self, selectedDevice, **kwargs):
