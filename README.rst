@@ -4,6 +4,8 @@ air-sans
 
 A trame application for analysis, inspection, and reduction of multi-detector data produced by the Small-Angle Neutron Scattering (SANS) instruments.
 
+.. image:: air-sans.png
+  :alt: Usage example within Binder 
 
 License
 ----------
