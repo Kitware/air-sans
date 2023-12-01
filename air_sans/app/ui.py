@@ -176,35 +176,37 @@ class FigureControl(AbstractCard):
         super().__init__("viz", "mdi-image-multiple-outline", "Image")
         with self._content:
             with vuetify.VRow(classes="pa-0 pt-1", dense=True, hide_details=True):
-                with vuetify.VCol(cols="6"):
-                    vuetify.VSelect(
-                        v_model=("selectedRepresentation", "Heatmap"),
-                        items=("representations", ["Heatmap", "Contours", "Combined"]),
-                        label="Representation",
-                        dense=True,
-                        hide_details=True,
-                        outlined=True,
-                    )
-                with vuetify.VCol(cols="6"):
+                # Not applicable with current simple VTK pipeline
+                # with vuetify.VCol(cols="6"):
+                #     vuetify.VSelect(
+                #         v_model=("selectedRepresentation", "Heatmap"),
+                #         items=("representations", ["Heatmap", "Contours", "Combined"]),
+                #         label="Representation",
+                #         dense=True,
+                #         hide_details=True,
+                #         outlined=True,
+                #     )
+                with vuetify.VCol(cols="12"):
                     vuetify.VSelect(
                         v_model=("selectedColor", "spectral"),
                         items=(
                             "colors",
-                            ["spectral", "rdbu", "gray", "blackbody", "sunset"],
+                            # ["spectral", "rdbu", "gray", "blackbody", "sunset"],
+                            ["spectral", "gray", "inferno", "viridis"],  # ok with VTK
                         ),
                         label="Colors",
                         dense=True,
                         hide_details=True,
                         outlined=True,
                     )
-            with vuetify.VRow(classes="pa-0 pt-1", dense=True, hide_details=True):
-                with vuetify.VCol(cols="6"):
-                    vuetify.VCheckbox(
-                        v_model=("contour_labels", True),
-                        label="Contour labels",
-                        dense=True,
-                        hide_details=True,
-                    )
+            # with vuetify.VRow(classes="pa-0 pt-1", dense=True, hide_details=True):
+            #     with vuetify.VCol(cols="6"):
+            #         vuetify.VCheckbox(
+            #             v_model=("contour_labels", True),
+            #             label="Contour labels",
+            #             dense=True,
+            #             hide_details=True,
+            #         )
 
 
 class Scattering(AbstractCard):
