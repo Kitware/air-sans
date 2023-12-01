@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v0.2.2 (2023-12-01)
+
+### Fix
+
+* D11+reader ([`8b7a307`](https://github.com/Kitware/air-sans/commit/8b7a3070c6856a71785e0bb45105e0485528cf06))
+
+### Documentation
+
+* **readme:** Add picture ([`d15eb2d`](https://github.com/Kitware/air-sans/commit/d15eb2deed5c13186ed008807a9b8852099761c4))
+
 ## v0.2.1 (2023-11-28)
 
 ### Fix
