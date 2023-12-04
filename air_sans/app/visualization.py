@@ -71,6 +71,7 @@ class Visualization:
     )
     def create_d11_fig(self, **kwargs):
         state = self.server.state
+        return
 
         print("pixel_ratio", state.pixel_ratio)
 
