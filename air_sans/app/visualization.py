@@ -1,3 +1,4 @@
+# import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from trame.decorators import TrameApp, change
@@ -24,6 +25,7 @@ class Visualization:
         # data = np.fromfile("/Users/sebastien.jourdain/Downloads/heatmap_gpsans.np").reshape(500, 49152)
         self._center_data = data
         self._center_view.update_data(data, x, y)
+        # self._center_view.update_data(data, 1, 100)
 
     def set_right_data(self, data, x, y):
         self._right_data = data
