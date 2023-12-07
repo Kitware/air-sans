@@ -1,8 +1,10 @@
 from trame.widgets import html, vuetify
 from .ui_scattering import create_scattering_content
 from .ui_transmission import create_transmission_content
+from .vtk import LUTS
 
 SUPPORTED_DEVICES = ["D11+"]
+LUT_NAMES = list(LUTS.keys())
 
 
 class AbstractCard(vuetify.VCard):
@@ -188,11 +190,12 @@ class FigureControl(AbstractCard):
                 #     )
                 with vuetify.VCol(cols="12"):
                     vuetify.VSelect(
-                        v_model=("selectedColor", "spectral"),
+                        v_model=("selectedColor", "samsel"),
                         items=(
                             "colors",
                             # ["spectral", "rdbu", "gray", "blackbody", "sunset"],
-                            ["spectral", "gray", "inferno", "viridis"],  # ok with VTK
+                            # ["spectral", "gray", "inferno", "viridis"],  # ok with PyVista
+                            LUT_NAMES,
                         ),
                         label="Colors",
                         dense=True,

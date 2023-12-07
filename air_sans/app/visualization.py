@@ -13,13 +13,13 @@ class Visualization:
         self._left_data = None
         self._center_data = None
         self._right_data = None
-        self._left_view = DetectorView(server, False)
+        # self._left_view = DetectorView(server, False)
         self._center_view = DetectorView(server, True)
-        self._right_view = DetectorView(server, False)
+        # self._right_view = DetectorView(server, False)
 
     def set_left_data(self, data, x, y):
         self._left_data = data
-        self._left_view.update_data(data, x, y)
+        # self._left_view.update_data(data, x, y)
 
     def set_center_data(self, data, x, y):
         # data = np.fromfile("/Users/sebastien.jourdain/Downloads/heatmap_gpsans.np").reshape(500, 49152)
@@ -29,7 +29,7 @@ class Visualization:
 
     def set_right_data(self, data, x, y):
         self._right_data = data
-        self._right_view.update_data(data, x, y)
+        # self._right_view.update_data(data, x, y)
 
     @property
     def left_render_window(self):
@@ -53,9 +53,9 @@ class Visualization:
         self._right_view.set_html_view(html_view)
 
     def reset_camera(self):
-        self._left_view.html_reset_camera()
+        # self._left_view.html_reset_camera()
         self._center_view.html_reset_camera()
-        self._right_view.html_reset_camera()
+        # self._right_view.html_reset_camera()
 
     @change(
         "selectedRepresentation",

@@ -115,27 +115,10 @@ class AirSans:
                     fluid=True,
                     classes="pa-0 fill-height",
                 ):
-                    with vuetify.VRow(classes="fill-height pa-0"):
-                        with vuetify.VCol(cols=3, classes="pa-0"):
-                            view = vtk.VtkRemoteView(
-                                self._viz.left_render_window, interactive_ratio=1
-                            )
-                            self._viz.set_left_view(view)
-                        with vuetify.VCol(cols=6, classes="pa-0"):
-                            view = vtk.VtkRemoteView(
-                                self._viz.center_render_window, interactive_ratio=1
-                            )
-                            self._viz.set_center_view(view)
-                        with vuetify.VCol(cols=3, classes="pa-0"):
-                            view = vtk.VtkRemoteView(
-                                self._viz.right_render_window, interactive_ratio=1
-                            )
-                            self._viz.set_right_view(view)
-
-                    # self.ctrl.update_d11 = plotly.Figure(
-                    #     display_mode_bar=("false",),
-                    #     v_show=("figure_ready", False),
-                    # ).update
+                    view = vtk.VtkRemoteView(
+                        self._viz.center_render_window, interactive_ratio=1
+                    )
+                    self._viz.set_center_view(view)
 
             return layout
 
@@ -170,21 +153,21 @@ class AirSans:
             self._selected_device.pixel1_y,
         )
 
-        state.left_ny = self._selected_device.ny2
-        state.left_nx = self._selected_device.nx2
-        self._viz.set_left_data(
-            self._selected_device.det2_data,
-            self._selected_device.pixel2_x,
-            self._selected_device.pixel2_y,
-        )
+        # state.left_ny = self._selected_device.ny2
+        # state.left_nx = self._selected_device.nx2
+        # self._viz.set_left_data(
+        #     self._selected_device.det2_data,
+        #     self._selected_device.pixel2_x,
+        #     self._selected_device.pixel2_y,
+        # )
 
-        state.right_ny = self._selected_device.ny3
-        state.right_nx = self._selected_device.nx3
-        self._viz.set_right_data(
-            self._selected_device.det3_data,
-            self._selected_device.pixel3_x,
-            self._selected_device.pixel3_y,
-        )
+        # state.right_ny = self._selected_device.ny3
+        # state.right_nx = self._selected_device.nx3
+        # self._viz.set_right_data(
+        #     self._selected_device.det3_data,
+        #     self._selected_device.pixel3_x,
+        #     self._selected_device.pixel3_y,
+        # )
 
         self._viz.create_d11_fig()
         state.figure_ready = True
@@ -194,23 +177,50 @@ class AirSans:
         self.server.state.figure_ready = False
 
         if device_active_data == "mask":
-            self._viz.set_center_data(self._selected_device.detector1_imask_data)
-            self._viz.set_left_data(self._selected_device.detector2_imask_data)
-            self._viz.set_right_data(self._selected_device.detector3_imask_data)
+            self._viz.set_center_data(
+                self._selected_device.detector1_imask_data,
+                *self._selected_device.detector1_pixel_size
+            )
+            self._viz.set_left_data(
+                self._selected_device.detector2_imask_data,
+                *self._selected_device.detector2_pixel_size
+            )
+            self._viz.set_right_data(
+                self._selected_device.detector3_imask_data,
+                *self._selected_device.detector3_pixel_size
+            )
             self.server.state.figure_ready = True
             self._viz.create_d11_fig()
 
         if device_active_data == "efficiency":
-            self._viz.set_center_data(self._selected_device.detector1_efficiency_data)
-            self._viz.set_left_data(self._selected_device.detector2_efficiency_data)
-            self._viz.set_right_data(self._selected_device.detector3_efficiency_data)
+            self._viz.set_center_data(
+                self._selected_device.detector1_efficiency_data,
+                *self._selected_device.detector1_pixel_size
+            )
+            self._viz.set_left_data(
+                self._selected_device.detector2_efficiency_data,
+                *self._selected_device.detector2_pixel_size
+            )
+            self._viz.set_right_data(
+                self._selected_device.detector3_efficiency_data,
+                *self._selected_device.detector3_pixel_size
+            )
             self.server.state.figure_ready = True
             self._viz.create_d11_fig()
 
         if device_active_data == "error":
-            self._viz.set_center_data(self._selected_device.detector1_efficiency_error)
-            self._viz.set_left_data(self._selected_device.detector2_efficiency_error)
-            self._viz.set_right_data(self._selected_device.detector3_efficiency_error)
+            self._viz.set_center_data(
+                self._selected_device.detector1_efficiency_error,
+                *self._selected_device.detector1_pixel_size
+            )
+            self._viz.set_left_data(
+                self._selected_device.detector2_efficiency_error,
+                *self._selected_device.detector2_pixel_size
+            )
+            self._viz.set_right_data(
+                self._selected_device.detector3_efficiency_error,
+                *self._selected_device.detector3_pixel_size
+            )
             self.server.state.figure_ready = True
             self._viz.create_d11_fig()
 
