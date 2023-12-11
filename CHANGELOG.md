@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.2.3 (2023-12-11)
+
+### Fix
+
+* Remove nexusformat dependency ([`1ab5754`](https://github.com/Kitware/air-sans/commit/1ab575414ccb99ccaaffa10c67ad95215f0a4bb9))
+
 ## v0.2.2 (2023-12-01)
 
 ### Fix
