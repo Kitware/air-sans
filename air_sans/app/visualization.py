@@ -1,6 +1,9 @@
+# import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from trame.decorators import TrameApp, change
+
+from .vtk import DetectorView
 
 
 @TrameApp()
@@ -10,15 +13,49 @@ class Visualization:
         self._left_data = None
         self._center_data = None
         self._right_data = None
+        # self._left_view = DetectorView(server, False)
+        self._center_view = DetectorView(server, True)
+        # self._right_view = DetectorView(server, False)
 
-    def set_left_data(self, data):
+    def set_left_data(self, data, x, y):
         self._left_data = data
+        # self._left_view.update_data(data, x, y)
 
-    def set_center_data(self, data):
+    def set_center_data(self, data, x, y):
+        # data = np.fromfile("/Users/sebastien.jourdain/Downloads/heatmap_gpsans.np").reshape(500, 49152)
         self._center_data = data
+        self._center_view.update_data(data, x, y)
+        # self._center_view.update_data(data, 1, 100)
 
-    def set_right_data(self, data):
+    def set_right_data(self, data, x, y):
         self._right_data = data
+        # self._right_view.update_data(data, x, y)
+
+    @property
+    def left_render_window(self):
+        return self._left_view.render_window
+
+    def set_left_view(self, html_view):
+        self._left_view.set_html_view(html_view)
+
+    @property
+    def center_render_window(self):
+        return self._center_view.render_window
+
+    def set_center_view(self, html_view):
+        self._center_view.set_html_view(html_view)
+
+    @property
+    def right_render_window(self):
+        return self._right_view.render_window
+
+    def set_right_view(self, html_view):
+        self._right_view.set_html_view(html_view)
+
+    def reset_camera(self):
+        # self._left_view.html_reset_camera()
+        self._center_view.html_reset_camera()
+        # self._right_view.html_reset_camera()
 
     @change(
         "selectedRepresentation",
@@ -34,6 +71,10 @@ class Visualization:
     )
     def create_d11_fig(self, **kwargs):
         state = self.server.state
+        return
+
+        print("pixel_ratio", state.pixel_ratio)
+
         fig = make_subplots(
             rows=5,
             cols=4,
@@ -102,7 +143,9 @@ class Visualization:
         fig.update_layout(
             coloraxis=dict(colorscale=state.selectedColor), showlegend=False
         )
-        self.server.controller.update_d11(fig)
+
+        print("FIXME no more plotly....")
+        # self.server.controller.update_d11(fig)
 
         return fig
 

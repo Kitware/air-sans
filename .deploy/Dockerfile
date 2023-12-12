@@ -1,4 +1,4 @@
-FROM kitware/trame
+FROM kitware/trame:glvnd
 
 # Copy the server directory
 COPY --chown=trame-user:trame-user . /local-app
