@@ -10,7 +10,7 @@ BASE = Path(__file__).parent
 class D11_Plus:
     def __init__(self):
         self.Facility = "ILL"
-        self.Instrument = "d11_plus"
+        self.Instrument = "D11+"
         self.Name = "D11+_(2021-current)"
         self.Highlight = True
         # Filename
@@ -42,6 +42,7 @@ class D11_Plus:
         self.detector1_imask_data = mf.read_mask_mat_file(
             BASE / "det_mask" / "det1_d11_plus.mat"
         )
+        self.reset_detector1_mask()
         self.detector1_relative_efficiency = (
             1  # Efficiency relative to rear detector (detector 1)
         )
@@ -66,6 +67,7 @@ class D11_Plus:
         self.detector2_imask_data = mf.read_mask_mat_file(
             BASE / "det_mask" / "det2_d11_plus.mat"
         )
+        self.reset_detector2_mask()
         self.detector2_relative_efficiency = 1
         self.detector2_efficiency_data = mf.read_efficiency_mat_file_data(
             BASE / "det_efficiency" / "det2_d11_plus.mat"
@@ -88,12 +90,28 @@ class D11_Plus:
         self.detector3_imask_data = mf.read_mask_mat_file(
             BASE / "det_mask" / "det3_d11_plus.mat"
         )
+        self.reset_detector3_mask()
         self.detector3_relative_efficiency = 1
         self.detector3_efficiency_data = mf.read_efficiency_mat_file_data(
             BASE / "det_efficiency" / "det3_d11_plus.mat"
         )
         self.detector3_efficiency_error = mf.read_efficiency_mat_file_error(
             BASE / "det_efficiency" / "det3_d11_plus.mat"
+        )
+
+    def reset_detector1_mask(self):
+        self.detector1_mask = np.where(
+            self.detector1_imask_data == 1, np.nan, self.detector1_imask_data
+        )
+
+    def reset_detector2_mask(self):
+        self.detector2_mask = np.where(
+            self.detector2_imask_data == 1, np.nan, self.detector2_imask_data
+        )
+
+    def reset_detector3_mask(self):
+        self.detector3_mask = np.where(
+            self.detector3_imask_data == 1, np.nan, self.detector3_imask_data
         )
 
     def read_file(self, dir, path):

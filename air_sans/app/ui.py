@@ -2,7 +2,7 @@ from trame.widgets import html, vuetify
 from .ui_scattering import create_scattering_content
 from .ui_transmission import create_transmission_content
 
-SUPPORTED_DEVICES = ["D11+"]
+SUPPORTED_DEVICES = ["D11+", "CG2"]
 
 
 class AbstractCard(vuetify.VCard):
@@ -190,7 +190,7 @@ class FigureControl(AbstractCard):
                         v_model=("selectedColor", "spectral"),
                         items=(
                             "colors",
-                            ["spectral", "rdbu", "gray", "blackbody", "sunset"],
+                            ["spectral", "rdbu", "gray", "ylgn", "ylorbr"],
                         ),
                         label="Colors",
                         dense=True,
@@ -202,6 +202,13 @@ class FigureControl(AbstractCard):
                     vuetify.VCheckbox(
                         v_model=("contour_labels", True),
                         label="Contour labels",
+                        dense=True,
+                        hide_details=True,
+                    )
+                with vuetify.VCol(cols="6"):
+                    vuetify.VCheckbox(
+                        v_model=("show_mask", True),
+                        label="Show mask",
                         dense=True,
                         hide_details=True,
                     )

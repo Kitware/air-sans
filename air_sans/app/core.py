@@ -4,7 +4,7 @@ import logging
 from trame.app import get_server
 from trame.decorators import TrameApp, change
 from trame.ui.vuetify import SinglePageWithDrawerLayout
-from trame.widgets import vuetify, plotly
+from trame.widgets import vuetify, plotly, vtk
 
 from .ui import (
     DeviceSelector,
@@ -15,6 +15,7 @@ from .ui import (
     Transmission,
 )
 from .instrument.d11_plus import D11_Plus
+from .instrument.cg2 import CG2
 from .visualization import Visualization
 from .utilities import file_search as fs
 
@@ -32,7 +33,7 @@ PANELS = [
 
 
 # ---------------------------------------------------------
-# Engine class
+# AirSans class
 # ---------------------------------------------------------
 
 
@@ -54,6 +55,14 @@ class AirSans:
         args, _ = self.server.cli.parse_known_args()
         if data is None:
             data = args.data
+
+        # Renderer
+        self.state.renderer = "plotly"
+
+        # Detectors
+        self.state.left_detector = False
+        self.state.center_detector = False
+        self.state.right_detector = False
 
         # search directory contents
         self.state.dirs = fs.get_directory_structure(data)
@@ -98,6 +107,25 @@ class AirSans:
                             vuetify.VIcon(icon, small=True)
 
                 vuetify.VSpacer()
+                with vuetify.VBtnToggle(
+                    v_model=("renderer",),
+                    dense=True,
+                    classes="ml-6",
+                    hide_details=True,
+                    required=True,
+                ):
+                    with vuetify.VBtn(
+                        small=True,
+                        icon=True,
+                        value="plotly",
+                    ):
+                        vuetify.VIcon("mdi-border-all-variant")
+                    with vuetify.VBtn(
+                        small=True,
+                        icon=True,
+                        value="vtk",
+                    ):
+                        vuetify.VIcon("mdi-border-all")
 
             with layout.drawer as drawer:
                 drawer.width = 350
@@ -114,17 +142,72 @@ class AirSans:
                     fluid=True,
                     classes="pa-0 fill-height",
                 ):
-                    self.ctrl.update_d11 = plotly.Figure(
-                        display_mode_bar=("false",),
-                        v_show=("figure_ready", False),
-                    ).update
+                    with vuetify.VRow(
+                        v_show="selectedDevice == 'CG2' && renderer == 'vtk'",
+                        classes="fill-height pa-0",
+                    ):
+                        with vuetify.VCol(
+                            cols=12, v_show="center_detector", classes="pa-0"
+                        ):
+                            view = vtk.VtkRemoteView(
+                                self._viz.full_render_window, interactive_ratio=1
+                            )
+                            self._viz.set_full_view(view)
+                    with vuetify.VRow(
+                        v_show="selectedDevice == 'D11+' && renderer == 'vtk'",
+                        classes="fill-height pa-0",
+                    ):
+                        with vuetify.VCol(
+                            cols=3, v_show="left_detector", classes="pa-0"
+                        ):
+                            view = vtk.VtkRemoteView(
+                                self._viz.left_render_window, interactive_ratio=1
+                            )
+                            self._viz.set_left_view(view)
+                        with vuetify.VCol(
+                            cols=6, v_show="center_detector", classes="pa-0"
+                        ):
+                            view = vtk.VtkRemoteView(
+                                self._viz.center_render_window, interactive_ratio=1
+                            )
+                            self._viz.set_center_view(view)
+                        with vuetify.VCol(
+                            cols=3,
+                            v_show="right_detector",
+                            classes="pa-0",
+                        ):
+                            view = vtk.VtkRemoteView(
+                                self._viz.right_render_window, interactive_ratio=1
+                            )
+                            self._viz.set_right_view(view)
+                    with vuetify.VRow(
+                        v_show="renderer == 'plotly'", classes="fill-height pa-0"
+                    ):
+                        self.ctrl.plotly_view_update = plotly.Figure(
+                            display_mode_bar=("false",),
+                            v_show=("figure_ready", False),
+                        ).update
 
             return layout
 
     @change("selectedDevice")
     def on_device_change(self, selectedDevice, **kwargs):
         if selectedDevice == "D11+":
+            self._viz.set_selected_device("D11+")
             self._selected_device = D11_Plus()
+            self.state.left_detector = True
+            self.state.center_detector = True
+            self.state.right_detector = True
+            self._viz.set_center_mask(self._selected_device.detector1_mask)
+            self._viz.set_left_mask(self._selected_device.detector2_mask)
+            self._viz.set_right_mask(self._selected_device.detector3_mask)
+        elif selectedDevice == "CG2":
+            self._viz.set_selected_device("CG2")
+            self._selected_device = CG2()
+            self.state.left_detector = True
+            self.state.center_detector = True
+            self.state.right_detector = True
+            self._viz.set_center_mask(self._selected_device.detector1_mask)
 
     def select_directory(self, active_nodes):
         self.server.state.directory_label = None
@@ -137,52 +220,117 @@ class AirSans:
                 self.server.state.files = fs.get_file_list(node_id)
 
     def selected_file(self, file):
+        if self._selected_device.Instrument == "D11+":
+            self.open_d11plus_file(file)
+        elif self._selected_device.Instrument == "CG2":
+            self.open_cg2_file(file)
+        else:
+            return
+
+    def open_cg2_file(self, file):
         state = self.server.state
         state.file = file
         self._selected_device.read_file(self._active_directory, state.file)
-        pixel_x = self._selected_device.pixel1_x
-        pixel_y = self._selected_device.pixel1_y
-        state.pixel_ratio = pixel_y / pixel_x
-
+        self._viz.reset_data_minmax()
+        pixel1_x = self._selected_device.detector1_pixel_size[0]
+        pixel1_y = self._selected_device.detector1_pixel_size[1]
+        state.pixel_ratio = pixel1_y / pixel1_x
         state.center_ny = self._selected_device.ny1
         state.center_nx = self._selected_device.nx1
-        self._viz.set_center_data(self._selected_device.det1_data)
+        self._viz.set_center_data(self._selected_device.det1_data, pixel1_x, pixel1_y)
 
+        self._viz.update_visualization()
+
+        state.figure_ready = True
+
+    def open_d11plus_file(self, file):
+        state = self.server.state
+        state.file = file
+        self._selected_device.read_file(self._active_directory, state.file)
+        self._viz.reset_data_minmax()
+
+        pixel1_x = self._selected_device.pixel1_x
+        pixel1_y = self._selected_device.pixel1_y
+        state.pixel_ratio = pixel1_y / pixel1_x
+        state.center_ny = self._selected_device.ny1
+        state.center_nx = self._selected_device.nx1
+        self._viz.set_center_data(self._selected_device.det1_data, pixel1_x, pixel1_y)
+
+        pixel2_x = self._selected_device.pixel2_x
+        pixel2_y = self._selected_device.pixel2_y
         state.left_ny = self._selected_device.ny2
         state.left_nx = self._selected_device.nx2
-        self._viz.set_left_data(self._selected_device.det2_data)
+        self._viz.set_left_data(self._selected_device.det2_data, pixel2_x, pixel2_y)
 
+        pixel3_x = self._selected_device.pixel3_x
+        pixel3_y = self._selected_device.pixel3_y
         state.right_ny = self._selected_device.ny3
         state.right_nx = self._selected_device.nx3
-        self._viz.set_right_data(self._selected_device.det3_data)
+        self._viz.set_right_data(self._selected_device.det3_data, pixel3_x, pixel3_y)
 
-        self._viz.create_d11_fig()
+        self._viz.update_visualization()
+
         state.figure_ready = True
 
     @change("device_active_data")
     def show_imask(self, device_active_data, **kwargs):
         self.server.state.figure_ready = False
-
         if device_active_data == "mask":
-            self._viz.set_center_data(self._selected_device.detector1_imask_data)
-            self._viz.set_left_data(self._selected_device.detector2_imask_data)
-            self._viz.set_right_data(self._selected_device.detector3_imask_data)
+            pixel1_x = self._selected_device.pixel1_x
+            pixel1_y = self._selected_device.pixel1_y
+            pixel2_x = self._selected_device.pixel2_x
+            pixel2_y = self._selected_device.pixel2_y
+            pixel3_x = self._selected_device.pixel3_x
+            pixel3_y = self._selected_device.pixel3_y
+            self._viz.set_center_data(
+                self._selected_device.detector1_imask_data, pixel1_x, pixel1_y
+            )
+            self._viz.set_left_data(
+                self._selected_device.detector2_imask_data, pixel2_x, pixel2_y
+            )
+            self._viz.set_right_data(
+                self._selected_device.detector3_imask_data, pixel3_x, pixel3_y
+            )
             self.server.state.figure_ready = True
-            self._viz.create_d11_fig()
+            self._viz.update_visualization()
 
         if device_active_data == "efficiency":
-            self._viz.set_center_data(self._selected_device.detector1_efficiency_data)
-            self._viz.set_left_data(self._selected_device.detector2_efficiency_data)
-            self._viz.set_right_data(self._selected_device.detector3_efficiency_data)
+            pixel1_x = self._selected_device.pixel1_x
+            pixel1_y = self._selected_device.pixel1_y
+            pixel2_x = self._selected_device.pixel2_x
+            pixel2_y = self._selected_device.pixel2_y
+            pixel3_x = self._selected_device.pixel3_x
+            pixel3_y = self._selected_device.pixel3_y
+            self._viz.set_center_data(
+                self._selected_device.detector1_efficiency_data, pixel1_x, pixel1_y
+            )
+            self._viz.set_left_data(
+                self._selected_device.detector2_efficiency_data, pixel2_x, pixel2_y
+            )
+            self._viz.set_right_data(
+                self._selected_device.detector3_efficiency_data, pixel3_x, pixel3_y
+            )
             self.server.state.figure_ready = True
-            self._viz.create_d11_fig()
+            self._viz.update_visualization()
 
         if device_active_data == "error":
-            self._viz.set_center_data(self._selected_device.detector1_efficiency_error)
-            self._viz.set_left_data(self._selected_device.detector2_efficiency_error)
-            self._viz.set_right_data(self._selected_device.detector3_efficiency_error)
+            pixel1_x = self._selected_device.pixel1_x
+            pixel1_y = self._selected_device.pixel1_y
+            pixel2_x = self._selected_device.pixel2_x
+            pixel2_y = self._selected_device.pixel2_y
+            pixel3_x = self._selected_device.pixel3_x
+            pixel3_y = self._selected_device.pixel3_y
+            self._viz.set_center_data(
+                self._selected_device.detector1_efficiency_error, pixel1_x, pixel1_y
+            )
+            self._viz.set_left_data(
+                self._selected_device.detector2_efficiency_error, pixel2_x, pixel2_y
+            )
+            self._viz.set_right_data(
+                self._selected_device.detector3_efficiency_error, pixel3_x, pixel3_y
+            )
             self.server.state.figure_ready = True
-            self._viz.create_d11_fig()
+            self._viz.update_visualization()
 
         if device_active_data == "" and self.server.state.file:
             self.selected_file(self.server.state.file)

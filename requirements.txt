@@ -1,9 +1,3 @@
 # Used for binder
-aiohttp<3.9
-trame
-trame-vuetify
-trame-plotly
-plotly
-
 air-sans
 trame_jupyter_extension<2
