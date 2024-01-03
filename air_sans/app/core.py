@@ -6,6 +6,7 @@ from trame.decorators import TrameApp, change
 from trame.ui.vuetify import SinglePageWithDrawerLayout
 from trame.widgets import vuetify, plotly, vtk
 
+from .assets import ASSETS
 from .ui import (
     DeviceSelector,
     Directory,
@@ -56,9 +57,6 @@ class AirSans:
         if data is None:
             data = args.data
 
-        # Renderer
-        self.state.renderer = "plotly"
-
         # Detectors
         self.state.left_detector = False
         self.state.center_detector = False
@@ -108,24 +106,26 @@ class AirSans:
 
                 vuetify.VSpacer()
                 with vuetify.VBtnToggle(
-                    v_model=("renderer",),
                     dense=True,
                     classes="ml-6",
+                    v_model=("renderer", "plotly"),
                     hide_details=True,
-                    required=True,
+                    mandatory=True,
                 ):
                     with vuetify.VBtn(
                         small=True,
                         icon=True,
                         value="plotly",
                     ):
-                        vuetify.VIcon("mdi-border-all-variant")
+                        vuetify.VImg(
+                            src=ASSETS.plotly, height=20, width=20, contain=True
+                        )
                     with vuetify.VBtn(
                         small=True,
                         icon=True,
                         value="vtk",
                     ):
-                        vuetify.VIcon("mdi-border-all")
+                        vuetify.VImg(src=ASSETS.vtk, height=20, width=20, contain=True)
 
             with layout.drawer as drawer:
                 drawer.width = 350
