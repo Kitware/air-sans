@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v0.3.0 (2024-01-03)
+
+### Feature
+
+* Add instrument ([`2d1c279`](https://github.com/Kitware/air-sans/commit/2d1c27939221665fb49079d3d6c048a278f3ef16))
+
+### Fix
+
+* **dep:** Add missing dependency ([`c9c0588`](https://github.com/Kitware/air-sans/commit/c9c05881501ad3714742119fa6319af957f374e2))
+
 ## v0.2.3 (2023-12-11)
 
 ### Fix
