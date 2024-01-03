@@ -1,28 +1,86 @@
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
+import numpy as np
+
 from trame.decorators import TrameApp, change
+
+from .vtk import VTKDetectorView
+from .plotly import PlotlyDetectorView
 
 
 @TrameApp()
 class Visualization:
     def __init__(self, server):
         self.server = server
+        self.selected_device = None
+        self._data_max = -2147483648
+        self._data_min = 2147483648
         self._left_data = None
+        self._left_mask = None
+        self._left_x = None
+        self._left_y = None
         self._center_data = None
+        self._center_mask = None
+        self._center_x = None
+        self._center_y = None
         self._right_data = None
+        self._right_mask = None
+        self._right_x = None
+        self._right_y = None
+        # VTK Views
+        self._full_view = VTKDetectorView(server, True)
+        self._left_view = VTKDetectorView(server, False)
+        self._center_view = VTKDetectorView(server, True)
+        self._right_view = VTKDetectorView(server, False)
+        # Plotly Views
+        self._all_view = PlotlyDetectorView(server)
 
-    def set_left_data(self, data):
+    def set_selected_device(self, device):
+        self.selected_device = device
+
+    def reset_data_minmax(self):
+        self._data_max = -2147483648
+        self._data_min = 2147483648
+
+    def set_left_data(self, data, x, y):
         self._left_data = data
+        tmp_min = np.min(data)
+        tmp_max = np.max(data)
+        self._data_min = min(self._data_min, tmp_min)
+        self._data_max = max(self._data_max, tmp_max)
+        self._left_x = x
+        self._left_y = y
 
-    def set_center_data(self, data):
+    def set_center_data(self, data, x, y):
         self._center_data = data
+        tmp_min = np.min(data)
+        tmp_max = np.max(data)
+        self._data_min = min(self._data_min, tmp_min)
+        self._data_max = max(self._data_max, tmp_max)
+        self._center_x = x
+        self._center_y = y
 
-    def set_right_data(self, data):
+    def set_right_data(self, data, x, y):
         self._right_data = data
+        tmp_min = np.min(data)
+        tmp_max = np.max(data)
+        self._data_min = min(self._data_min, tmp_min)
+        self._data_max = max(self._data_max, tmp_max)
+        self._right_x = x
+        self._right_y = y
+
+    def set_left_mask(self, mask):
+        self._left_mask = mask
+
+    def set_center_mask(self, mask):
+        self._center_mask = mask
+
+    def set_right_mask(self, mask):
+        self._right_mask = mask
 
     @change(
+        "renderer",
         "selectedRepresentation",
         "contour_labels",
+        "show_mask",
         "selectedColor",
         "center_nx",
         "center_ny",
@@ -32,131 +90,101 @@ class Visualization:
         "right_nx",
         "right_ny",
     )
-    def create_d11_fig(self, **kwargs):
-        state = self.server.state
-        fig = make_subplots(
-            rows=5,
-            cols=4,
-            specs=[
-                [None, {"rowspan": 5, "colspan": 2}, None, None],
-                [
-                    {"rowspan": 3, "colspan": 1},
-                    None,
-                    None,
-                    {"rowspan": 3, "colspan": 1},
-                ],
-                [None, None, None, None],
-                [None, None, None, None],
-                [None, None, None, None],
-            ],
-            print_grid=False,
-        )
-        # center (1,2), left (2,1), right (2,4)
-        if state.selectedRepresentation == "Heatmap":
-            self.create_heatmap(fig, self._center_data, 1, 2)
-        elif state.selectedRepresentation == "Contours":
-            self.create_contour(fig, self._center_data, 1, 2)
+    def update_visualization(self, **kwargs):
+        if self.selected_device == "D11+":
+            self.update_d11_visualization()
+        elif self.selected_device == "CG2":
+            self.update_cg2_visualization()
+
+    def update_d11_visualization(self, **kwargs):
+        if self.server.state.renderer != "plotly":
+            self.update_d11_vtk()
         else:
-            self.create_combined(fig, self._center_data, 1, 2)
-        fig.update_yaxes(
-            range=(0.0, state.center_nx),
-            constrain="domain",
-            scaleanchor="x",
-            scaleratio=state.pixel_ratio,
-            row=1,
-            col=2,
-        )
-        fig.update_xaxes(
-            range=(0.0, state.center_ny), constrain="domain", scaleratio=2, row=1, col=2
-        )
-        if state.selectedRepresentation == "Heatmap":
-            self.create_heatmap(fig, self._left_data, 2, 1)
-        elif state.selectedRepresentation == "Contours":
-            self.create_contour(fig, self._left_data, 2, 1)
+            self.update_d11_plotly()
+
+    def update_cg2_visualization(self, **kwargs):
+        if self.server.state.renderer != "plotly":
+            self.update_cg2_vtk()
         else:
-            self.create_combined(fig, self._left_data, 2, 1)
-        fig.update_yaxes(range=(0.0, state.left_nx), constrain="domain", row=2, col=1)
-        fig.update_xaxes(
-            range=(0.0, state.left_ny),
-            constrain="domain",
-            scaleanchor="y",
-            scaleratio=1,
-            row=2,
-            col=1,
-        )
-        if state.selectedRepresentation == "Heatmap":
-            self.create_heatmap(fig, self._right_data, 2, 4)
-        elif state.selectedRepresentation == "Contours":
-            self.create_contour(fig, self._right_data, 2, 4)
-        else:
-            self.create_combined(fig, self._right_data, 2, 4)
-        fig.update_yaxes(range=(0.0, state.right_nx), constrain="domain", row=2, col=4)
-        fig.update_xaxes(
-            range=(0.0, state.right_ny),
-            constrain="domain",
-            scaleanchor="y",
-            scaleratio=1,
-            row=2,
-            col=4,
-        )
-        fig.update_layout(
-            coloraxis=dict(colorscale=state.selectedColor), showlegend=False
-        )
-        self.server.controller.update_d11(fig)
+            self.update_cg2_plotly()
 
-        return fig
+    ################################
+    # VTK
+    ################################
 
-    def create_heatmap(self, fig, data, _row, _col, **kwargs):
-        fig.add_trace(
-            go.Heatmap(
-                z=data,
-                coloraxis="coloraxis",
-            ),
-            row=_row,
-            col=_col,
+    @property
+    def full_render_window(self):
+        return self._full_view.render_window
+
+    def set_full_view(self, html_view):
+        self._full_view.set_html_view(html_view)
+
+    @property
+    def left_render_window(self):
+        return self._left_view.render_window
+
+    def set_left_view(self, html_view):
+        self._left_view.set_html_view(html_view)
+
+    @property
+    def center_render_window(self):
+        return self._center_view.render_window
+
+    def set_center_view(self, html_view):
+        self._center_view.set_html_view(html_view)
+
+    @property
+    def right_render_window(self):
+        return self._right_view.render_window
+
+    def set_right_view(self, html_view):
+        self._right_view.set_html_view(html_view)
+
+    def reset_camera(self):
+        self._left_view.html_reset_camera()
+        self._center_view.html_reset_camera()
+        self._right_view.html_reset_camera()
+
+    def update_d11_vtk(self, **kwargs):
+        self._left_view.set_data_minmax(self._data_min, self._data_max)
+        self._left_view.update_data(
+            self._left_data, self._left_mask, self._left_x, self._left_y
         )
-
-    def create_contour(self, fig, data, _row, _col, **kwargs):
-        state = self.server.state
-
-        fig.add_trace(
-            go.Contour(
-                z=data,
-                contours={
-                    "coloring": "lines",
-                    "showlabels": state.contour_labels,
-                    "labelfont": {
-                        "size": 12,
-                        "color": "black",
-                    },
-                },
-                contours_coloring="lines",
-                line_smoothing=1,
-                coloraxis="coloraxis",
-                name="(1,2)",
-            ),
-            row=_row,
-            col=_col,
+        self._center_view.set_data_minmax(self._data_min, self._data_max)
+        self._center_view.update_data(
+            self._center_data, self._center_mask, self._center_x, self._center_y
+        )
+        self._right_view.set_data_minmax(self._data_min, self._data_max)
+        self._right_view.update_data(
+            self._right_data, self._right_mask, self._right_x, self._right_y
         )
 
-    def create_combined(self, fig, data, _row, _col, **kwargs):
-        state = self.server.state
-
-        fig.add_trace(
-            go.Contour(
-                z=data,
-                contours={
-                    "coloring": "heatmap",
-                    "showlabels": state.contour_labels,
-                    "labelfont": {
-                        "size": 12,
-                        "color": "black",
-                    },
-                },
-                line_smoothing=1,
-                coloraxis="coloraxis",
-                name="(1,2)",
-            ),
-            row=_row,
-            col=_col,
+    def update_cg2_vtk(self, **kwargs):
+        self._full_view.set_data_minmax(self._data_min, self._data_max)
+        self._full_view.update_data(
+            self._center_data, self._center_mask, self._center_x, self._center_y
         )
+
+    ################################
+    # Plotly
+    ################################
+
+    def update_d11_plotly(self, **kwargs):
+        self._all_view.set_data_minmax(self._data_min, self._data_max)
+        self._all_view.update_left_data(
+            self._left_data, self._left_mask, self._left_x, self._left_y
+        )
+        self._all_view.update_center_data(
+            self._center_data, self._center_mask, self._center_x, self._center_y
+        )
+        self._all_view.update_right_data(
+            self._right_data, self._right_mask, self._right_x, self._right_y
+        )
+        self._all_view.update_d11_view()
+
+    def update_cg2_plotly(self, **kwargs):
+        self._all_view.set_data_minmax(self._data_min, self._data_max)
+        self._all_view.update_center_data(
+            self._center_data, self._center_mask, self._center_x, self._center_y
+        )
+        self._all_view.update_cg2_view()
